@@ -38,6 +38,7 @@
 
 ### 👥 Team Members
 
+| Name |
 | :--- | 
 | **Guna Adriana** |
 | **Ionita Maria** | 
