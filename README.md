@@ -1,26 +1,51 @@
-# OutfitCheck AI
-This application is an AI-powered fashion assistant that helps users manage a digital wardrobe and effortlessly create stylish outfits. By uploading photos of their clothes, users can build a virtual closet that is automatically organized using computer vision. The app’s AI agents generate outfit suggestions based on weather, and occasion, provide detailed feedback and ratings, and recommend additional items to enhance each look. It also enables users to discover and recreate outfits through intelligent search and visual inspiration.
+<div align="center">
 
-## Team members
-* Guna Adriana
-* Ionita Maria
-* Mitrea Ioana
-* Tighinean Sonia
+<img width="600" alt="logo" src="https://github.com/user-attachments/assets/316c8d9d-a4ef-415b-a619-243fc2f7827d" />
 
-## User stories
+### Your AI-powered fashion assistant for a smarter, more stylish wardrobe.
 
-#### As a user...
-1. I want to create a secure account, so that my virtual wardrobe and personal style preferences are securely saved and accessible from my phone.
-2. I want to upload photos of my clothes and have them automatically categorized by the AI (e.g., type of garment, season), so that I don’t have to manually organize my digital closet. 
-3. I want to add and delete items from my virtual wardrobe, so that my digital closet stays accurate and easy to navigate.
-4. I want the AI Stylist agent to generate complete outfit suggestions based on my wardrobe, current weather, and occasion, so that I save time and don’t have to stress about what to wear. 
-5. I want to see a digital visualization of my outfit combinations, so that I can preview how the pieces look together without physically trying them on.
-6. I want to save my favorite AI-generated outfits into a personal "Favorites" folder, so that I have quick access to my best looks on days when I am in a hurry.
-7. I want to get an automated review from the AI Fashion Critic agent on my chosen outfit, so that I can receive objective feedback on my style, color matching, and occasion suitability.
-8. I want to search for clothing and jewelry in my closet and online using natural language descriptions (e.g., “black elegant dress”), so that I can quickly find specific items without using complex filters.
-9. I want to upload a photo of an outfit I like and receive links to similar clothing from online stores, so that I can easily recreate styles I see on the internet.
+**OutfitCheck AI** is a digital stylist that transforms how you manage your clothes — we bridge the gap between "having clothes" and "having an outfit."
 
 ---
-#### As a stylist...
-10. I want to search for rare, unique garments and statement pieces using advanced AI filters, so that I can find distinctive items for my clients that are difficult to track down on the standard internet.
+</div>
 
+### ✨ Key Features
+
+* 📸 **Smart Digitalization** – Build a virtual closet automatically from photos.
+* 🤖 **Dual AI Agents** – Get context-aware suggestions (weather/event) and stylistic feedback.
+* 🔍 **Intelligent Search** – Find garments using natural language or visual inspiration.
+* 👗 **Outfit Visualization** – See how pieces look together before you put them on.
+* 📅 **Contextual Styling** – Recommendations tailored to weather and occasion.
+
+---
+
+### 📝 User Stories
+
+| Role | I want to... | So that... |
+| :--- | :--- | :--- |
+| **User** | Create a secure account | My virtual wardrobe and personal style preferences are securely saved and accessible from my phone. |
+| **User** | Upload photos of my clothes for automatic categorization | I don’t have to manually organize my digital closet. |
+| **User** | Add and delete items from my virtual wardrobe | My digital closet stays accurate and easy to navigate. |
+| **User** | Get outfit suggestions based on wardrobe, weather, and occasion | I save time and don’t have to stress about what to wear. |
+| **User** | See a digital visualization of outfit combinations | I can preview how the pieces look together without physically trying them on. |
+| **User** | Save favorite outfits into a "Favorites" folder | I have quick access to my best looks on days when I am in a hurry. |
+| **User** | Get an automated review from the AI Fashion Critic agent | I can receive objective feedback on my style, color matching, and suitability. |
+| **User** | Search using natural language (e.g., “black elegant dress”) | I can quickly find specific items without using complex filters. |
+| **User** | Upload a photo and receive links to similar clothing | I can easily recreate styles I see on the internet. |
+| **Stylist** | Search for rare, unique garments using advanced AI filters | I can find distinctive items for my clients that are difficult to track down. |
+
+---
+
+### 👥 Team Members
+
+| Name | 
+| :--- | 
+| **Guna Adriana** |
+| **Ionita Maria** | 
+| **Mitrea Ioana** |
+| **Tighinean Sonia** | 
+
+---
+<div align="center">
+  <sub>MDS Project 2026 • FMI Unibuc</sub>
+</div>
