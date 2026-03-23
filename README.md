@@ -1,4 +1,4 @@
-# Proiect-MDS
+# OutfitCheck AI
 This application is an AI-powered fashion assistant that helps users manage a digital wardrobe and effortlessly create stylish outfits. By uploading photos of their clothes, users can build a virtual closet that is automatically organized using computer vision. The app’s AI agents generate outfit suggestions based on weather, and occasion, provide detailed feedback and ratings, and recommend additional items to enhance each look. It also enables users to discover and recreate outfits through intelligent search and visual inspiration.
 
 ## Team members
