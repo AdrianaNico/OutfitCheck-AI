@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wardrobe — OutfitCheck AI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">OutfitCheck AI</a>
+        <div class="nav-links" id="app-links">
+            <a href="/dashboard" class="active">👕 Wardrobe</a>
+            <a href="/outfits">✨ Outfits</a>
+            <a href="/critic">👁️ Critic</a>
+            <a href="/search">🔍 Search</a>
+            <a href="/favorites">❤️ Favorites</a>
+            <a href="#" onclick="logout()" style="color:var(--accent-2)">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="container">
+            <!-- Header -->
+            <div class="flex-between page-header">
+                <div>
+                    <h1>My Wardrobe</h1>
+                    <p>Manage your digital closet — <span id="item-count">0</span> items</p>
+                </div>
+                <button class="btn btn-primary" onclick="openAddModal()" id="add-garment-btn">+ Add Item</button>
+            </div>
+
+            <!-- Category Filters -->
+            <div class="flex gap-8 mb-16" id="category-filters">
+                <button class="btn btn-sm btn-secondary active" data-cat="">All</button>
+                <button class="btn btn-sm btn-secondary" data-cat="top">👕 Tops</button>
+                <button class="btn btn-sm btn-secondary" data-cat="bottom">👖 Bottoms</button>
+                <button class="btn btn-sm btn-secondary" data-cat="dress">👗 Dresses</button>
+                <button class="btn btn-sm btn-secondary" data-cat="outerwear">🧥 Outerwear</button>
+                <button class="btn btn-sm btn-secondary" data-cat="shoes">👟 Shoes</button>
+                <button class="btn btn-sm btn-secondary" data-cat="accessory">👜 Accessories</button>
+            </div>
+
+            <!-- Garments Grid -->
+            <div class="grid grid-3 stagger" id="garments-grid"></div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state" style="display:none">
+                <div class="icon">👗</div>
+                <h3>Your wardrobe is empty</h3>
+                <p>Start by adding your first clothing item!</p>
+                <button class="btn btn-primary" onclick="openAddModal()">+ Add Your First Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Garment Modal -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="glass modal" style="position:relative">
+            <button class="modal-close" onclick="closeAddModal()">✕</button>
+            <h2>Add New Item</h2>
+
+            <form id="add-form">
+                <!-- Image Upload -->
+                <div class="upload-area" id="upload-area" onclick="document.getElementById('image-input').click()">
+                    <div class="icon">📸</div>
+                    <p>Click to upload a photo</p>
+                    <img id="upload-preview" class="upload-preview" style="display:none">
+                </div>
+                <input type="file" id="image-input" accept="image/*" style="display:none">
+
+                <div class="form-group mt-16">
+                    <label>
+                        <input type="checkbox" id="auto-categorize"> ✨ Auto-categorize with AI (uses your photo)
+                    </label>
+                </div>
+
+                <div id="manual-fields">
+                    <div class="form-group">
+                        <label for="garment-name">Name</label>
+                        <input type="text" id="garment-name" class="form-input" placeholder="Blue Cotton T-Shirt" required>
+                    </div>
+
+                    <div class="flex gap-16">
+                        <div class="form-group" style="flex:1">
+                            <label for="garment-category">Category</label>
+                            <select id="garment-category" class="form-select" required>
+                                <option value="top">Top</option>
+                                <option value="bottom">Bottom</option>
+                                <option value="dress">Dress</option>
+                                <option value="outerwear">Outerwear</option>
+                                <option value="shoes">Shoes</option>
+                                <option value="accessory">Accessory</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label for="garment-color">Color</label>
+                            <input type="text" id="garment-color" class="form-input" placeholder="Blue">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-16">
+                        <div class="form-group" style="flex:1">
+                            <label for="garment-season">Season</label>
+                            <select id="garment-season" class="form-select">
+                                <option value="all">All Seasons</option>
+                                <option value="spring">Spring</option>
+                                <option value="summer">Summer</option>
+                                <option value="autumn">Autumn</option>
+                                <option value="winter">Winter</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label for="garment-occasion">Occasion</label>
+                            <select id="garment-occasion" class="form-select">
+                                <option value="casual">Casual</option>
+                                <option value="formal">Formal</option>
+                                <option value="sport">Sport</option>
+                                <option value="party">Party</option>
+                                <option value="work">Work</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-16" style="width:100%" id="add-btn">Add to Wardrobe</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        if (!requireAuth()) throw new Error('Not authenticated');
+
+        let currentCategory = '';
+        let allGarments = [];
+
+        // Load wardrobe
+        async function loadWardrobe(category = '') {
+            try {
+                const url = category ? `/api/wardrobe/?category=${category}` : '/api/wardrobe/';
+                allGarments = await api(url);
+                renderGarments(allGarments);
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function renderGarments(garments) {
+            const grid = document.getElementById('garments-grid');
+            const empty = document.getElementById('empty-state');
+            document.getElementById('item-count').textContent = garments.length;
+
+            if (garments.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            grid.innerHTML = garments.map(g => `
+                <div class="card garment-card" id="garment-${g.id}">
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteGarment('${g.id}')" title="Delete">🗑</button>
+                    ${g.image_url
+                        ? `<img src="${g.image_url}" class="garment-img" alt="${g.name}">`
+                        : `<div class="garment-placeholder">${getCategoryIcon(g.category)}</div>`
+                    }
+                    <div class="garment-info">
+                        <div class="garment-name">${g.name}</div>
+                        <div class="garment-meta">${g.color} · ${g.season} · ${g.occasion}</div>
+                        <div class="garment-tags">
+                            <span class="tag">${g.category}</span>
+                            ${g.subcategory ? `<span class="tag tag-pink">${g.subcategory}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Category filters
+        document.querySelectorAll('[data-cat]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.cat;
+                loadWardrobe(currentCategory);
+            });
+        });
+
+        // Image preview
+        document.getElementById('image-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const preview = document.getElementById('upload-preview');
+                    preview.src = ev.target.result;
+                    preview.style.display = 'block';
+                    document.querySelector('#upload-area .icon').style.display = 'none';
+                    document.querySelector('#upload-area p').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Add garment
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('add-btn');
+            const autoCat = document.getElementById('auto-categorize').checked;
+            const imageInput = document.getElementById('image-input');
+
+            btn.textContent = autoCat ? '✨ AI is analyzing...' : 'Adding...';
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('name', document.getElementById('garment-name').value || 'My Item');
+                formData.append('category', document.getElementById('garment-category').value);
+                formData.append('color', document.getElementById('garment-color').value);
+                formData.append('season', document.getElementById('garment-season').value);
+                formData.append('occasion', document.getElementById('garment-occasion').value);
+                formData.append('auto_categorize', autoCat);
+
+                if (imageInput.files[0]) {
+                    formData.append('image', imageInput.files[0]);
+                }
+
+                await api('/api/wardrobe/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                showToast('Item added to wardrobe!');
+                closeAddModal();
+                loadWardrobe(currentCategory);
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.textContent = 'Add to Wardrobe';
+                btn.disabled = false;
+            }
+        });
+
+        // Delete garment
+        async function deleteGarment(id) {
+            if (!confirm('Delete this item from your wardrobe?')) return;
+            try {
+                await api(`/api/wardrobe/${id}`, { method: 'DELETE' });
+                showToast('Item removed');
+                loadWardrobe(currentCategory);
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('add-modal').classList.add('active');
+            document.getElementById('add-form').reset();
+            document.getElementById('upload-preview').style.display = 'none';
+            const icon = document.querySelector('#upload-area .icon');
+            const p = document.querySelector('#upload-area p');
+            if (icon) icon.style.display = 'block';
+            if (p) p.style.display = 'block';
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.remove('active');
+        }
+
+        // Init
+        loadWardrobe();
+    </script>
+</body>
+</html>
