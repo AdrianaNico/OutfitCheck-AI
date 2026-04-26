@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Critic — OutfitCheck AI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">OutfitCheck AI</a>
+        <div class="nav-links" id="app-links">
+            <a href="/dashboard">👕 Wardrobe</a>
+            <a href="/outfits">✨ Outfits</a>
+            <a href="/critic" class="active">👁️ Critic</a>
+            <a href="/search">🔍 Search</a>
+            <a href="/favorites">❤️ Favorites</a>
+            <a href="#" onclick="logout()" style="color:var(--accent-2)">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="container">
+            <div class="page-header">
+                <h1>👁️ Fashion Critic</h1>
+                <p>Select items to build an outfit and get AI-powered fashion feedback</p>
+            </div>
+
+            <div class="flex gap-24" style="flex-wrap:wrap">
+                <!-- Left: Item Selection -->
+                <div style="flex:1; min-width:300px">
+                    <h3 style="margin-bottom:16px">Select items for your outfit:</h3>
+                    <div class="grid grid-4" id="items-grid"></div>
+
+                    <div class="form-group mt-24">
+                        <label for="critic-occasion">Occasion</label>
+                        <select id="critic-occasion" class="form-select">
+                            <option value="casual">Casual</option>
+                            <option value="formal">Formal</option>
+                            <option value="work">Work</option>
+                            <option value="party">Party</option>
+                            <option value="sport">Sport</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg" style="width:100%" onclick="getCritique()" id="critique-btn">
+                        👁️ Get Fashion Critique
+                    </button>
+                </div>
+
+                <!-- Right: Feedback -->
+                <div style="flex:1; min-width:300px" id="feedback-area">
+                    <div class="empty-state">
+                        <div class="icon">👁️</div>
+                        <h3>Select items & get feedback</h3>
+                        <p>Choose clothes from your wardrobe, then let the AI Fashion Critic evaluate your outfit.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        if (!requireAuth()) throw new Error('Not authenticated');
+
+        let selectedIds = new Set();
+
+        // Check if redirected from outfit page
+        const critiqueIds = localStorage.getItem('critique_ids');
+        if (critiqueIds) {
+            try { JSON.parse(critiqueIds).forEach(id => selectedIds.add(id)); } catch(e) {}
+            localStorage.removeItem('critique_ids');
+        }
+
+        async function loadItems() {
+            try {
+                const items = await api('/api/wardrobe/');
+                const grid = document.getElementById('items-grid');
+                grid.innerHTML = items.map(g => `
+                    <div class="outfit-item ${selectedIds.has(g.id) ? 'selected' : ''}"
+                         onclick="toggleItem('${g.id}', this)" id="item-${g.id}"
+                         title="${g.name}">
+                        ${g.image_url
+                            ? `<img src="${g.image_url}" alt="${g.name}">`
+                            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-glass);font-size:24px">${getCategoryIcon(g.category)}</div>`
+                        }
+                    </div>
+                `).join('');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function toggleItem(id, el) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+                el.classList.remove('selected');
+            } else {
+                selectedIds.add(id);
+                el.classList.add('selected');
+            }
+        }
+
+        async function getCritique() {
+            if (selectedIds.size === 0) {
+                showToast('Select at least one item!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('critique-btn');
+            btn.textContent = '👁️ Analyzing your style...';
+            btn.disabled = true;
+            showLoading('The Fashion Critic is evaluating your outfit...');
+
+            try {
+                const result = await api('/api/outfits/critique', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        garment_ids: Array.from(selectedIds),
+                        occasion: document.getElementById('critic-occasion').value
+                    })
+                });
+
+                renderFeedback(result);
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                hideLoading();
+                btn.textContent = '👁️ Get Fashion Critique';
+                btn.disabled = false;
+            }
+        }
+
+        function renderFeedback(fb) {
+            const area = document.getElementById('feedback-area');
+            const score = fb.overall_score || 0;
+
+            area.innerHTML = `
+                <div class="card fade-in">
+                    <div class="text-center mb-16">
+                        <div class="score-circle" style="--score:${score}; margin:0 auto">
+                            <span>${score}</span>
+                        </div>
+                        <p style="margin-top:12px; color:var(--text-secondary)">Overall Score</p>
+                    </div>
+
+                    <div class="feedback-section">
+                        <div class="feedback-row">
+                            <span class="feedback-label">🎨 Color Harmony</span>
+                            <span class="feedback-value">${fb.color_score || 0}/10</span>
+                        </div>
+                        <div class="score-bar"><div class="score-bar-fill" style="width:${(fb.color_score || 0) * 10}%"></div></div>
+                        <p style="font-size:13px; color:var(--text-secondary); margin:8px 0 16px">${fb.color_harmony || ''}</p>
+
+                        <div class="feedback-row">
+                            <span class="feedback-label">👗 Style Coherence</span>
+                            <span class="feedback-value">${fb.style_score || 0}/10</span>
+                        </div>
+                        <div class="score-bar"><div class="score-bar-fill" style="width:${(fb.style_score || 0) * 10}%"></div></div>
+                        <p style="font-size:13px; color:var(--text-secondary); margin:8px 0 16px">${fb.style_coherence || ''}</p>
+
+                        <div class="feedback-row">
+                            <span class="feedback-label">🎯 Occasion Fit</span>
+                            <span class="feedback-value">${fb.occasion_score || 0}/10</span>
+                        </div>
+                        <div class="score-bar"><div class="score-bar-fill" style="width:${(fb.occasion_score || 0) * 10}%"></div></div>
+                        <p style="font-size:13px; color:var(--text-secondary); margin:8px 0 16px">${fb.occasion_fit || ''}</p>
+                    </div>
+
+                    ${fb.highlights && fb.highlights.length ? `
+                        <h4 style="margin:20px 0 10px">✨ Highlights</h4>
+                        ${fb.highlights.map(h => `<div class="highlight-item">${h}</div>`).join('')}
+                    ` : ''}
+
+                    ${fb.improvements && fb.improvements.length ? `
+                        <h4 style="margin:20px 0 10px">💡 Improvements</h4>
+                        ${fb.improvements.map(i => `<div class="improvement-item">${i}</div>`).join('')}
+                    ` : ''}
+
+                    <div class="verdict-box">
+                        <div class="verdict-text">"${fb.verdict || 'No verdict'}"</div>
+                        <div class="vibe">Vibe: ${fb.vibe || 'Unknown'} · Celebrity match: ${fb.celebrity_match || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        loadItems();
+    </script>
+</body>
+</html>
