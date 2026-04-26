@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — OutfitCheck AI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="glass auth-card">
+            <h1>Join OutfitCheck</h1>
+            <p class="subtitle">Create your digital wardrobe</p>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="fullname">Full Name</label>
+                    <input type="text" id="fullname" class="form-input" placeholder="Jane Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-input" placeholder="janedoe" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Min 6 characters" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%" id="register-btn">Create Account</button>
+            </form>
+
+            <p class="divider">Already have an account? <a href="/login">Sign in</a></p>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        if (getToken()) window.location.href = '/dashboard';
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('register-btn');
+            btn.textContent = 'Creating account...';
+            btn.disabled = true;
+
+            try {
+                const data = await api('/api/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        full_name: document.getElementById('fullname').value,
+                        username: document.getElementById('username').value,
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+                setToken(data.access_token);
+                setUser(data.user);
+                showToast('Account created! Welcome!');
+                setTimeout(() => window.location.href = '/dashboard', 500);
+            } catch (err) {
+                showToast(err.message, 'error');
+                btn.textContent = 'Create Account';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

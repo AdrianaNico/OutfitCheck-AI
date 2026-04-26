@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OutfitCheck AI — Your AI-Powered Fashion Assistant</title>
+    <meta name="description" content="OutfitCheck AI transforms your wardrobe with AI-powered outfit suggestions and fashion critique.">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <section class="landing-hero">
+        <h1>Your Wardrobe,<br><span class="gradient-text">Reimagined by AI</span></h1>
+        <p>OutfitCheck AI transforms how you manage your clothes — build a virtual closet, get AI-powered outfit suggestions, and receive expert fashion critique.</p>
+
+        <div class="hero-cta">
+            <a href="/register" class="btn btn-primary btn-lg" id="cta-register">Get Started Free</a>
+            <a href="/login" class="btn btn-secondary btn-lg" id="cta-login">Sign In</a>
+        </div>
+
+        <div class="features-grid stagger">
+            <div class="card feature-card">
+                <div class="icon">📸</div>
+                <h3>Smart Digitalization</h3>
+                <p>Upload photos and our AI automatically categorizes your clothes — color, type, season, and style.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="icon">🤖</div>
+                <h3>Dual AI Agents</h3>
+                <p>An Outfit Stylist suggests perfect combinations, while a Fashion Critic gives you honest feedback.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="icon">🌤️</div>
+                <h3>Weather-Aware</h3>
+                <p>Recommendations that consider real-time weather so you're always dressed for the conditions.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="icon">🔍</div>
+                <h3>Smart Search</h3>
+                <p>Find items using natural language — just type "black elegant dress" and we'll find it.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="icon">❤️</div>
+                <h3>Save Favorites</h3>
+                <p>Build a collection of your best outfits for quick access when you're in a hurry.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="icon">👗</div>
+                <h3>Visual Preview</h3>
+                <p>See how pieces look together in a digital visualization before you get dressed.</p>
+            </div>
+        </div>
+    </section>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Redirect if already logged in
+        if (getToken()) window.location.href = '/dashboard';
+    </script>
+</body>
+</html>
