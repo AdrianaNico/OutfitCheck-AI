@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search — OutfitCheck AI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">OutfitCheck AI</a>
+        <div class="nav-links" id="app-links">
+            <a href="/dashboard">👕 Wardrobe</a>
+            <a href="/outfits">✨ Outfits</a>
+            <a href="/critic">👁️ Critic</a>
+            <a href="/search" class="active">🔍 Search</a>
+            <a href="/favorites">❤️ Favorites</a>
+            <a href="#" onclick="logout()" style="color:var(--accent-2)">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="container">
+            <div class="page-header">
+                <h1>🔍 Smart Search</h1>
+                <p>Find items using natural language — try "black elegant dress" or "casual summer top"</p>
+            </div>
+
+            <div class="flex gap-16 mb-16" style="align-items:end">
+                <div class="form-group" style="flex:1; margin-bottom:0">
+                    <input type="text" id="search-input" class="form-input" placeholder='Search your wardrobe... (e.g. "red casual shoes")' style="font-size:16px; padding:16px 20px">
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="doSearch()" id="search-btn">Search</button>
+            </div>
+
+            <div id="search-results"></div>
+
+            <div class="empty-state" id="search-empty">
+                <div class="icon">🔍</div>
+                <h3>Search your wardrobe</h3>
+                <p>Type a description and we'll find matching items using natural language processing.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        if (!requireAuth()) throw new Error('Not authenticated');
+
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doSearch();
+        });
+
+        async function doSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) return;
+
+            const btn = document.getElementById('search-btn');
+            btn.textContent = 'Searching...';
+            btn.disabled = true;
+
+            try {
+                const result = await api('/api/search/', {
+                    method: 'POST',
+                    body: JSON.stringify({ query })
+                });
+
+                const container = document.getElementById('search-results');
+                const empty = document.getElementById('search-empty');
+
+                if (!result.results || result.results.length === 0) {
+                    container.innerHTML = '';
+                    empty.innerHTML = `<div class="icon">😔</div><h3>No results found</h3><p>Try different keywords</p>`;
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                empty.style.display = 'none';
+                container.innerHTML = `
+                    <p style="color:var(--text-secondary); margin-bottom:16px">${result.total} result${result.total !== 1 ? 's' : ''} for "${result.query}"</p>
+                    <div class="grid grid-3 stagger">
+                        ${result.results.map(r => {
+                            const g = r.garment;
+                            return `
+                                <div class="card garment-card">
+                                    ${g.image_url
+                                        ? `<img src="${g.image_url}" class="garment-img" alt="${g.name}">`
+                                        : `<div class="garment-placeholder">${getCategoryIcon(g.category)}</div>`
+                                    }
+                                    <div class="garment-info">
+                                        <div class="garment-name">${g.name}</div>
+                                        <div class="garment-meta">${g.color} · ${g.season} · ${g.occasion}</div>
+                                        <div class="garment-tags">
+                                            <span class="tag">${g.category}</span>
+                                            <span class="tag tag-blue">Match: ${Math.round(r.relevance_score * 20)}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.textContent = 'Search';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
