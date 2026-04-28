@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites — OutfitCheck AI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">OutfitCheck AI</a>
+        <div class="nav-links" id="app-links">
+            <a href="/dashboard">👕 Wardrobe</a>
+            <a href="/outfits">✨ Outfits</a>
+            <a href="/critic">👁️ Critic</a>
+            <a href="/search">🔍 Search</a>
+            <a href="/favorites" class="active">❤️ Favorites</a>
+            <a href="#" onclick="logout()" style="color:var(--accent-2)">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="container">
+            <div class="page-header">
+                <h1>❤️ Favorite Outfits</h1>
+                <p>Your best looks, saved for quick access</p>
+            </div>
+
+            <div class="grid grid-2 stagger" id="favorites-grid"></div>
+
+            <div class="empty-state" id="favorites-empty" style="display:none">
+                <div class="icon">❤️</div>
+                <h3>No favorites yet</h3>
+                <p>Go to the Outfits page and save your best looks!</p>
+                <a href="/outfits" class="btn btn-primary">✨ Generate Outfits</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        if (!requireAuth()) throw new Error('Not authenticated');
+
+        async function loadFavorites() {
+            try {
+                const favs = await api('/api/outfits/favorites/all');
+                const grid = document.getElementById('favorites-grid');
+                const empty = document.getElementById('favorites-empty');
+
+                if (!favs.length) {
+                    grid.innerHTML = '';
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                empty.style.display = 'none';
+                grid.innerHTML = favs.map(o => `
+                    <div class="card">
+                        <div class="flex-between">
+                            <h3>❤️ ${o.name}</h3>
+                            <button class="btn btn-sm btn-secondary" onclick="removeFav('${o.id}')">Remove</button>
+                        </div>
+                        <div class="garment-tags mt-16">
+                            <span class="tag">${o.occasion}</span>
+                            ${o.ai_score ? `<span class="tag tag-pink">Score: ${o.ai_score}/10</span>` : ''}
+                        </div>
+                        ${o.ai_feedback && o.ai_feedback.verdict ? `
+                            <div class="verdict-box" style="margin-top:16px; padding:14px">
+                                <div class="verdict-text" style="font-size:14px">"${o.ai_feedback.verdict}"</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function removeFav(id) {
+            try {
+                await api(`/api/outfits/${id}/favorite`, { method: 'POST' });
+                showToast('Removed from favorites');
+                loadFavorites();
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        loadFavorites();
+    </script>
+</body>
+</html>
