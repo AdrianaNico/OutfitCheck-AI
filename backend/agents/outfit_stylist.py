@@ -107,7 +107,7 @@ Return your response as valid JSON following the format specified in your instru
     # Step 4: Call Gemini API
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-flash-lite-latest",
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=STYLIST_SYSTEM_PROMPT,
@@ -163,7 +163,7 @@ Return ONLY valid JSON:
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-flash-lite-latest",
             contents=[
                 types.Part.from_bytes(
                     data=__import__('base64').b64decode(image_base64),
