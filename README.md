@@ -32,7 +32,7 @@
 | **User** | Get an automated review from the AI Fashion Critic agent | I can receive objective feedback on my style, color matching, and suitability. |
 | **User** | Search using natural language (e.g., “black elegant dress”) | I can quickly find specific items without using complex filters. |
 | **User** | Upload a photo and receive links to similar clothing | I can easily recreate styles I see on the internet. |
-| **Stylist** | Search for rare, unique garments using advanced AI filters | I can find distinctive items for my clients that are difficult to track down. |
+| **User** | Search for outfits online based on a specific vibe or style | I can easily get inspired and put together unique looks. |
 
 ---
 
