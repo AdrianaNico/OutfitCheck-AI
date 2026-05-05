@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outfit Generator — OutfitCheck AI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">OutfitCheck AI</a>
+        <div class="nav-links" id="app-links">
+            <a href="/dashboard">👕 Wardrobe</a>
+            <a href="/outfits" class="active">✨ Outfits</a>
+            <a href="/critic">👁️ Critic</a>
+            <a href="/search">🔍 Search</a>
+            <a href="/favorites">❤️ Favorites</a>
+            <a href="#" onclick="logout()" style="color:var(--accent-2)">Logout</a>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="container">
+            <div class="page-header">
+                <h1>✨ AI Outfit Stylist</h1>
+                <p>Get personalized outfit suggestions based on your wardrobe, weather, and occasion</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="card" style="margin-bottom:24px">
+                <div class="flex gap-16" style="flex-wrap:wrap; align-items:end">
+                    <div class="form-group" style="flex:1; min-width:200px; margin-bottom:0">
+                        <label for="occasion-select">Occasion</label>
+                        <select id="occasion-select" class="form-select">
+                            <option value="casual">Casual</option>
+                            <option value="formal">Formal</option>
+                            <option value="work">Work</option>
+                            <option value="party">Party</option>
+                            <option value="sport">Sport</option>
+                            <option value="date">Date Night</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1; min-width:200px; margin-bottom:0">
+                        <label for="city-input">City (for weather)</label>
+                        <input type="text" id="city-input" class="form-input" value="Bucharest" placeholder="Bucharest">
+                    </div>
+                    <button class="btn btn-primary btn-lg" onclick="generateOutfits()" id="generate-btn">
+                        ✨ Generate Outfits
+                    </button>
+                </div>
+            </div>
+
+            <!-- Weather Widget -->
+            <div class="glass weather-widget" id="weather-widget" style="display:none">
+                <img id="weather-icon" src="" alt="weather">
+                <div>
+                    <div class="temp" id="weather-temp"></div>
+                    <div class="desc" id="weather-desc"></div>
+                </div>
+                <div style="margin-left:auto">
+                    <div class="desc" id="weather-hint"></div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="results"></div>
+
+            <!-- Saved Outfits -->
+            <div style="margin-top:48px">
+                <h2 style="margin-bottom:20px">📋 Saved Outfits</h2>
+                <div id="saved-outfits" class="grid grid-2"></div>
+                <div class="empty-state" id="no-saved" style="display:none">
+                    <p>No saved outfits yet. Generate and save some!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Outfit Modal -->
+    <div class="modal-overlay" id="view-outfit-modal">
+        <div class="glass modal" style="position:relative; max-width:500px">
+            <button class="modal-close" onclick="closeViewOutfitModal()">✕</button>
+            <h2 id="view-outfit-name" style="margin-bottom:8px"></h2>
+            <div class="garment-tags" style="margin-bottom:20px" id="view-outfit-tags"></div>
+            
+            <h4 style="margin-bottom:10px">👕 Items in this outfit:</h4>
+            <div class="grid grid-2" id="view-outfit-items" style="margin-bottom:20px; gap:8px"></div>
+            
+            <div id="view-outfit-feedback-container" style="display:none">
+                <h4 style="margin-bottom:10px">👁️ Fashion Critic Feedback:</h4>
+                <div class="card" style="padding:16px; background:var(--bg-glass)">
+                    <p id="view-outfit-verdict" style="font-size:14px; color:var(--text-secondary); font-style:italic"></p>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary mt-16" style="width:100%" onclick="closeViewOutfitModal()">Close Details</button>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        if (!requireAuth()) throw new Error('Not authenticated');
+
+        let wardrobeItems = [];
+        let allOutfits = [];
+
+        async function loadWardrobe() {
+            wardrobeItems = await api('/api/wardrobe/');
+        }
+
+        async function generateOutfits() {
+            const btn = document.getElementById('generate-btn');
+            btn.textContent = '✨ AI is thinking...';
+            btn.disabled = true;
+            showLoading('The Outfit Stylist is analyzing your wardrobe...');
+
+            try {
+                const result = await api('/api/outfits/suggest', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        occasion: document.getElementById('occasion-select').value,
+                        city: document.getElementById('city-input').value || 'Bucharest'
+                    })
+                });
+
+                // Show weather
+                if (result.weather) {
+                    const w = result.weather;
+                    document.getElementById('weather-widget').style.display = 'flex';
+                    document.getElementById('weather-temp').textContent = `${w.temperature}°C`;
+                    document.getElementById('weather-desc').textContent = `${w.city} — ${w.description}`;
+                    document.getElementById('weather-hint').textContent = w.clothing_hint;
+                    if (w.icon) document.getElementById('weather-icon').src = w.icon;
+                }
+
+                // Show suggestions
+                const container = document.getElementById('results');
+                if (!result.suggestions || result.suggestions.length === 0) {
+                    container.innerHTML = `<div class="card text-center" style="padding:40px">
+                        <p>${result.reasoning || 'No suggestions available. Add more items to your wardrobe!'}</p>
+                    </div>`;
+                } else {
+                    container.innerHTML = result.suggestions.map((s, i) => `
+                        <div class="card suggestion-card fade-in" style="animation-delay:${i * 0.15}s">
+                            <div class="flex-between">
+                                <h3>${s.name || `Outfit ${i + 1}`}</h3>
+                                <span class="vibe-tag">${s.style_vibe || 'Stylish'}</span>
+                            </div>
+                            <div class="suggestion-items">
+                                ${(s.item_names || []).map(name => 
+                                    `<span class="item-badge">${name}</span>`
+                                ).join('')}
+                            </div>
+                            <div class="reasoning">${s.reasoning || ''}</div>
+                            <div class="flex gap-8 mt-16">
+                                <button class="btn btn-sm btn-primary" onclick="saveOutfit('${(s.item_names || []).join(',')}', '${s.name || ''}', ${JSON.stringify(s.items || []).replace(/"/g, '&quot;')})">
+                                    💾 Save Outfit
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="critiqueFromSuggestion(${JSON.stringify(s.items || []).replace(/"/g, '&quot;')})">
+                                    👁️ Get Critique
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    if (result.reasoning) {
+                        container.innerHTML += `<div class="card mt-16" style="padding:20px">
+                            <p style="color:var(--text-secondary)">${result.reasoning}</p>
+                        </div>`;
+                    }
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                hideLoading();
+                btn.textContent = '✨ Generate Outfits';
+                btn.disabled = false;
+            }
+        }
+
+        async function saveOutfit(itemNames, name, garmentIds) {
+            try {
+                // Try to find matching garment IDs from wardrobe
+                const ids = garmentIds && garmentIds.length > 0 
+                    ? garmentIds 
+                    : wardrobeItems.slice(0, 3).map(g => g.id);
+
+                await api('/api/outfits/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: name || 'My Outfit',
+                        garment_ids: ids,
+                        occasion: document.getElementById('occasion-select').value
+                    })
+                });
+                showToast('Outfit saved!');
+                loadSavedOutfits();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function critiqueFromSuggestion(garmentIds) {
+            if (garmentIds && garmentIds.length) {
+                localStorage.setItem('critique_ids', JSON.stringify(garmentIds));
+            }
+            window.location.href = '/critic';
+        }
+
+        async function loadSavedOutfits() {
+            try {
+                allOutfits = await api('/api/outfits/');
+                const container = document.getElementById('saved-outfits');
+                const empty = document.getElementById('no-saved');
+
+                if (!allOutfits.length) {
+                    container.innerHTML = '';
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                empty.style.display = 'none';
+                container.innerHTML = allOutfits.map(o => `
+                    <div class="card" onclick="viewOutfit('${o.id}')" style="cursor:pointer">
+                        <div class="flex-between">
+                            <h3>${o.name}</h3>
+                            <div class="flex gap-8">
+                                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); toggleFav('${o.id}', this)">
+                                    ${o.is_favorite ? '❤️' : '🤍'}
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteOutfit('${o.id}')">🗑</button>
+                            </div>
+                        </div>
+                        <div class="garment-tags mt-16">
+                            <span class="tag">${o.occasion}</span>
+                            ${o.ai_score ? `<span class="tag tag-pink">Score: ${o.ai_score}/10</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {}
+        }
+
+        async function toggleFav(id, btn) {
+            try {
+                const r = await api(`/api/outfits/${id}/favorite`, { method: 'POST' });
+                btn.textContent = r.is_favorite ? '❤️' : '🤍';
+                showToast(r.is_favorite ? 'Added to favorites!' : 'Removed from favorites');
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        async function deleteOutfit(id) {
+            if (!confirm('Delete this outfit?')) return;
+            try {
+                await api(`/api/outfits/${id}`, { method: 'DELETE' });
+                showToast('Outfit deleted');
+                loadSavedOutfits();
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        function viewOutfit(id) {
+            const o = allOutfits.find(x => x.id === id);
+            if (!o) return;
+
+            document.getElementById('view-outfit-name').textContent = o.name;
+            
+            document.getElementById('view-outfit-tags').innerHTML = `
+                <span class="tag">${o.occasion}</span>
+                ${o.is_favorite ? '<span class="tag" style="background:#ff4b4b;color:white">❤️ Favorite</span>' : ''}
+                ${o.ai_score ? `<span class="tag tag-pink">⭐ Score: ${o.ai_score}/10</span>` : ''}
+            `;
+
+            // Garments
+            const itemsGrid = document.getElementById('view-outfit-items');
+            if (o.garment_ids && o.garment_ids.length > 0 && wardrobeItems.length > 0) {
+                const garments = o.garment_ids.map(gid => wardrobeItems.find(w => w.id === gid)).filter(Boolean);
+                itemsGrid.innerHTML = garments.map(g => `
+                    <div class="card" style="padding:10px; display:flex; align-items:center; gap:10px">
+                        ${g.image_url 
+                            ? `<img src="${g.image_url}" style="width:40px;height:40px;border-radius:6px;object-fit:cover">`
+                            : `<div style="width:40px;height:40px;border-radius:6px;background:var(--bg-glass);display:flex;align-items:center;justify-content:center;font-size:20px">${getCategoryIcon(g.category)}</div>`
+                        }
+                        <div style="font-size:13px">
+                            <div style="font-weight:600">${g.name}</div>
+                            <div style="color:var(--text-secondary);font-size:11px">${g.color}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                itemsGrid.innerHTML = '<p style="color:var(--text-secondary)">No items available.</p>';
+            }
+
+            // Feedback
+            const fbc = document.getElementById('view-outfit-feedback-container');
+            const verdict = document.getElementById('view-outfit-verdict');
+            if (o.ai_feedback && o.ai_feedback.verdict) {
+                fbc.style.display = 'block';
+                verdict.textContent = `"${o.ai_feedback.verdict}"`;
+            } else {
+                fbc.style.display = 'none';
+            }
+
+            document.getElementById('view-outfit-modal').classList.add('active');
+        }
+
+        function closeViewOutfitModal() {
+            document.getElementById('view-outfit-modal').classList.remove('active');
+        }
+
+        loadWardrobe();
+        loadSavedOutfits();
+    </script>
+</body>
+</html>

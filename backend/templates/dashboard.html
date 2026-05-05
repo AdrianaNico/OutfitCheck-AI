@@ -129,6 +129,27 @@
         </div>
     </div>
 
+    <!-- View Garment Modal -->
+    <div class="modal-overlay" id="view-modal">
+        <div class="glass modal" style="position:relative; max-width:400px; text-align:center">
+            <button class="modal-close" onclick="closeViewModal()">✕</button>
+            <div id="view-image-container" style="height:250px; background:var(--bg-glass); border-radius:12px; margin-bottom:20px; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:48px">
+                <!-- Image or Icon -->
+            </div>
+            <h2 id="view-name" style="margin-bottom:8px"></h2>
+            <div class="garment-tags" style="justify-content:center; margin-bottom:16px" id="view-tags"></div>
+            
+            <div class="grid grid-2" style="text-align:left; gap:12px; font-size:14px; margin-bottom:20px">
+                <div class="card" style="padding:12px"><strong style="color:var(--text-secondary)">Color</strong><br><span id="view-color"></span></div>
+                <div class="card" style="padding:12px"><strong style="color:var(--text-secondary)">Season</strong><br><span id="view-season"></span></div>
+                <div class="card" style="padding:12px"><strong style="color:var(--text-secondary)">Occasion</strong><br><span id="view-occasion"></span></div>
+                <div class="card" style="padding:12px"><strong style="color:var(--text-secondary)">AI Subcategory</strong><br><span id="view-subcat"></span></div>
+            </div>
+            
+            <button class="btn btn-danger" style="width:100%" id="view-delete-btn">🗑 Delete Item</button>
+        </div>
+    </div>
+
     <script src="/static/js/app.js"></script>
     <script>
         if (!requireAuth()) throw new Error('Not authenticated');
@@ -160,7 +181,7 @@
 
             empty.style.display = 'none';
             grid.innerHTML = garments.map(g => `
-                <div class="card garment-card" id="garment-${g.id}">
+                <div class="card garment-card" id="garment-${g.id}" onclick="viewGarment('${g.id}')" style="cursor:pointer">
                     <button class="delete-btn" onclick="event.stopPropagation(); deleteGarment('${g.id}')" title="Delete">🗑</button>
                     ${g.image_url
                         ? `<img src="${g.image_url}" class="garment-img" alt="${g.name}">`
@@ -268,6 +289,39 @@
 
         function closeAddModal() {
             document.getElementById('add-modal').classList.remove('active');
+        }
+
+        // View Modal Logic
+        function viewGarment(id) {
+            const g = allGarments.find(x => x.id === id);
+            if (!g) return;
+
+            document.getElementById('view-name').textContent = g.name;
+            document.getElementById('view-color').textContent = g.color || '-';
+            document.getElementById('view-season').textContent = g.season || '-';
+            document.getElementById('view-occasion').textContent = g.occasion || '-';
+            document.getElementById('view-subcat').textContent = g.subcategory || '-';
+            
+            document.getElementById('view-tags').innerHTML = `
+                <span class="tag">${g.category}</span>
+                ${g.subcategory ? `<span class="tag tag-pink">${g.subcategory}</span>` : ''}
+            `;
+
+            const imgContainer = document.getElementById('view-image-container');
+            if (g.image_url) {
+                imgContainer.innerHTML = `<img src="${g.image_url}" style="width:100%; height:100%; object-fit:cover">`;
+            } else {
+                imgContainer.innerHTML = getCategoryIcon(g.category);
+            }
+
+            const delBtn = document.getElementById('view-delete-btn');
+            delBtn.onclick = () => { closeViewModal(); deleteGarment(g.id); };
+
+            document.getElementById('view-modal').classList.add('active');
+        }
+
+        function closeViewModal() {
+            document.getElementById('view-modal').classList.remove('active');
         }
 
         // Init
