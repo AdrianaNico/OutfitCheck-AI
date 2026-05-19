@@ -15,6 +15,7 @@
             <a href="/critic">👁️ Critic</a>
             <a href="/search">🔍 Search</a>
             <a href="/favorites" class="active">❤️ Favorites</a>
+            <span style="color:var(--text-secondary); margin-left:16px; margin-right:8px; display:flex; align-items:center; font-size: 14px;">👋 Hello, <span id="user-name" style="margin-left:4px; font-weight:600; color:var(--text)"></span></span>
             <a href="#" onclick="logout()" style="color:var(--accent-2)">Logout</a>
         </div>
     </nav>
@@ -82,11 +83,24 @@
                 }
 
                 empty.style.display = 'none';
-                grid.innerHTML = allFavs.map(o => `
+                grid.innerHTML = allFavs.map(o => {
+                    const garmentImages = (o.garment_ids || []).map(gid => {
+                        const g = wardrobeItems.find(w => w.id === gid);
+                        if (g) {
+                            if (g.image_url) return `<img src="${g.image_url}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;box-shadow:0 1px 3px rgba(0,0,0,0.1)" title="${g.name}">`;
+                            return `<div style="width:40px;height:40px;border-radius:6px;background:var(--bg-glass);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 1px 3px rgba(0,0,0,0.1)" title="${g.name}">${getCategoryIcon(g.category)}</div>`;
+                        }
+                        return '';
+                    }).join('');
+
+                    return `
                     <div class="card" onclick="viewOutfit('${o.id}')" style="cursor:pointer">
                         <div class="flex-between">
                             <h3>❤️ ${o.name}</h3>
                             <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); removeFav('${o.id}')">Remove</button>
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap">
+                            ${garmentImages}
                         </div>
                         <div class="garment-tags mt-16">
                             <span class="tag">${o.occasion}</span>
@@ -98,7 +112,7 @@
                             </div>
                         ` : ''}
                     </div>
-                `).join('');
+                `}).join('');
             } catch (err) {
                 showToast(err.message, 'error');
             }
