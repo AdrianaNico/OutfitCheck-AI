@@ -93,7 +93,7 @@ python -m uvicorn backend.main:app --reload --port 8000
 
 ---
 
-## 👥 Echipa (MDS 2026 - FMI Unibuc)
+## 👥 Echipa (Metode de Dezvoltare Software 2026 - FMI Unibuc)
 
 - **Guna Adriana** (Backend API & Integrare Agenți AI)
 - **Ionita Maria** (Frontend Design System & UI Components)
