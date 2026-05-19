@@ -19,7 +19,10 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                    <div style="position: relative;">
+                        <input type="password" id="password" class="form-input" placeholder="••••••••" required style="padding-right: 40px;">
+                        <span id="toggle-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;" title="Toggle Password Visibility">👁️</span>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%" id="login-btn">Sign In</button>
             </form>
@@ -31,6 +34,13 @@
     <script src="/static/js/app.js"></script>
     <script>
         if (getToken()) window.location.href = '/dashboard';
+
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const pwd = document.getElementById('password');
+            const type = pwd.getAttribute('type') === 'password' ? 'text' : 'password';
+            pwd.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -48,7 +58,7 @@
                 });
                 setToken(data.access_token);
                 setUser(data.user);
-                showToast('Welcome back!');
+                showToast(`Welcome back, ${data.user.username}!`);
                 setTimeout(() => window.location.href = '/dashboard', 500);
             } catch (err) {
                 showToast(err.message, 'error');
