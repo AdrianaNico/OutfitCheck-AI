@@ -75,7 +75,7 @@ def _map_wmo_code(code: int) -> tuple[str, str]:
     elif code in [95, 96, 99]:
         return "Thunderstorm", "11d"
     else:
-        return "Unknown weather", "02d"
+        return "Unknown condition", "02d"
 
 
 def _get_clothing_hint(temp: float) -> str:
