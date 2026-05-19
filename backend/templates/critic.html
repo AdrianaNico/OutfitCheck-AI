@@ -15,6 +15,7 @@
             <a href="/critic" class="active">👁️ Critic</a>
             <a href="/search">🔍 Search</a>
             <a href="/favorites">❤️ Favorites</a>
+            <span style="color:var(--text-secondary); margin-left:16px; margin-right:8px; display:flex; align-items:center; font-size: 14px;">👋 Hello, <span id="user-name" style="margin-left:4px; font-weight:600; color:var(--text)"></span></span>
             <a href="#" onclick="logout()" style="color:var(--accent-2)">Logout</a>
         </div>
     </nav>
@@ -71,6 +72,15 @@
         if (critiqueIds) {
             try { JSON.parse(critiqueIds).forEach(id => selectedIds.add(id)); } catch(e) {}
             localStorage.removeItem('critique_ids');
+        }
+
+        const critiqueOccasion = localStorage.getItem('critique_occasion');
+        if (critiqueOccasion) {
+            const occasionSelect = document.getElementById('critic-occasion');
+            if (occasionSelect) {
+                occasionSelect.value = critiqueOccasion;
+            }
+            localStorage.removeItem('critique_occasion');
         }
 
         async function loadItems() {
