@@ -20,7 +20,7 @@
 Acest repository conține toate elementele cerute pentru proiect:
 
 ### A. Implementare
-- **Live Demo & Screencast**: --------link---------
+- **Live Demo & Screencast**: https://drive.google.com/file/d/1fUrlQU3lbEuv_qJrz_o4ekzmSh8g3iBG/view?usp=sharing
 - **2 Agenți AI Integrate**: 
   - [Agent 1: Outfit Stylist (backend/agents/outfit_stylist.py)](backend/agents/outfit_stylist.py) - folosește tool use (vreme) și reasoning.
   - [Agent 2: Fashion Critic (backend/agents/fashion_critic.py)](backend/agents/fashion_critic.py) - folosește memory și persona-based reasoning.
