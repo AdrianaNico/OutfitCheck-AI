@@ -65,27 +65,18 @@ Acest repository conține toate elementele cerute pentru proiect:
 
 ## 📋 Product Backlog
 
-### 🔴 Must Have *(funcționalități de bază — implementate)*
-| ID | User Story | Status |
-| :--- | :--- | :--- |
-| US-01 | Ca utilizator, vreau să îmi creez un cont securizat, pentru că datele mele să fie protejate. | ✅ Done |
-| US-02 | Ca utilizator, vreau să încarc poze cu hainele mele pentru categorizare automată, pentru că nu vreau să completez manual fiecare câmp. | ✅ Done |
-| US-03 | Ca utilizator, vreau să adaug și să șterg haine din garderobă, pentru că garderoba digitală să fie mereu actualizată. | ✅ Done |
-| US-04 | Ca utilizator, vreau sugestii de outfit bazate pe garderobă, vreme și ocazie, pentru că să economisesc timp dimineața. | ✅ Done |
-| US-05 | Ca utilizator, vreau o critică automată de la Fashion Critic, pentru ca să primesc feedback obiectiv despre stilul meu. | ✅ Done |
-
-### 🟡 Should Have *(funcționalități importante — implementate)*
-| ID | User Story | Status |
-| :--- | :--- | :--- |
-| US-06 | Ca utilizator, vreau să văd o vizualizare a combinațiilor de outfit, pentru că să previzualizez ținuta înainte să o port. | ✅ Done |
-| US-07 | Ca utilizator, vreau să salvez outfit-uri favorite, pentru ca să le accesez rapid în zilele aglomerate. | ✅ Done |
-| US-08 | Ca utilizator, vreau să caut haine cu limbaj natural (ex. „rochie neagră elegantă"), pentru ca să găsesc rapid ce îmi trebuie. | ✅ Done |
-
-### 🟢 Could Have *(funcționalități bonus — parțial implementate)*
-| ID | User Story | Status |
-| :--- | :--- | :--- |
-| US-09 | Ca utilizator, vreau să încarc o poză și să primesc sugestii de haine similare, pentru ca să recombine stiluri văzute online. | ⚠️ Parțial (via Gemini Vision) |
-| US-10 | Ca utilizator, vreau să caut outfit-uri după un „vibe" sau stil, pentru ca să mă inspir și să creez ținute unice. | ⚠️ Parțial (via NLP Search) |
+| ID | Prioritate | Funcționalitate | Status |
+| :--- | :--- | :--- | :--- |
+| US-01 | 🔴 Must Have | Autentificare și creare cont securizat | ✅ Done |
+| US-02 | 🔴 Must Have | Upload haine cu auto-categorizare AI (Gemini Vision) | ✅ Done |
+| US-03 | 🔴 Must Have | CRUD complet garderobă virtuală | ✅ Done |
+| US-04 | 🔴 Must Have | Sugestii outfit bazate pe vreme și ocazie | ✅ Done |
+| US-05 | 🔴 Must Have | Critică AI automată pentru outfit selectat | ✅ Done |
+| US-06 | 🟡 Should Have | Vizualizare digitală a combinațiilor de outfit | ✅ Done |
+| US-07 | 🟡 Should Have | Salvare outfit-uri în lista de favorite | ✅ Done |
+| US-08 | 🟡 Should Have | Căutare NLP în garderobă (limbaj natural) | ✅ Done |
+| US-09 | 🟢 Could Have | Sugestii haine similare dintr-o poză externă | ⚠️ Parțial |
+| US-10 | 🟢 Could Have | Căutare outfit după vibe / stil specific | ⚠️ Parțial |
 
 ---
 
